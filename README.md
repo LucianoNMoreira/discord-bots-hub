@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Discord Bots Hub
 
-## Getting Started
+Management console built with Next.js and TypeScript to orchestrate Discord bots and forward their interactions to automation workflows such as n8n.
 
-First, run the development server:
+### Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Authenticated access using credentials stored in environment variables.
+- Bot registry storing name, avatar, description, interaction origin and relay webhook URL.
+- Encrypted at rest storage (AES-256-GCM) for Discord tokens.
+- Relay endpoint (`/api/relay/{botId}`) that forwards any inbound payload to the target webhook with context headers.
+- Multilingual interface (English, Español, Português-BR) with runtime language switcher.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Getting started
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Configure the environment variables in `.env.local`:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+   ```
+   AUTH_USERNAME=admin
+   AUTH_PASSWORD=change-me
+   AUTH_SECRET=replace-with-32-characters-secret
+   APP_BASE_URL=http://localhost:3000
+   ```
 
-## Learn More
+   | Variable | Description |
+   | --- | --- |
+   | `AUTH_USERNAME` / `AUTH_PASSWORD` | Credentials required to log in. |
+   | `AUTH_SECRET` | Minimum 32 characters secret used to sign sessions and encrypt tokens. |
+   | `APP_BASE_URL` | Base URL used to hint users about the relay endpoint. |
 
-To learn more about Next.js, take a look at the following resources:
+2. Install dependencies and run the development server:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+   ```
+   pnpm install
+   pnpm dev
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. Open [http://localhost:3000](http://localhost:3000) and authenticate with the configured credentials.
 
-## Deploy on Vercel
+### Discord permissions
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The application serves as a relay between Discord and your webhook service (e.g., n8n). Configure your Discord bot to send interactions to the relay endpoint. The bot token is stored encrypted and used only for forwarding requests.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Relay workflow
+
+1. Register a bot providing its webhook URL (e.g. your n8n webhook).
+2. Configure Discord to send events to `/api/relay/{botId}`.
+3. The application forwards the payload to the webhook and passes helpful headers such as `X-Discord-Bot-Id` and `X-Discord-Guild-Id`.
+
+### Roadmap ideas
+
+- Support editing and deleting bots.
+- Implement Discord interaction signature validation.
+- Surface request logs for observability.
+
