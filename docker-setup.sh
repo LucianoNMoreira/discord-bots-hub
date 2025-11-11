@@ -1,60 +1,60 @@
 #!/bin/bash
 
-echo "🐳 Configurando ambiente Docker para Discord Bots Management..."
+echo "🐳 Setting up Docker environment for Discord Bots Management..."
 echo ""
 
-# Verificar se o Docker está rodando
+# Check if Docker is running
 if ! docker info > /dev/null 2>&1; then
-    echo "❌ Docker não está rodando. Por favor, inicie o Docker e tente novamente."
+    echo "❌ Docker is not running. Please start Docker and try again."
     exit 1
 fi
 
-# Criar diretórios necessários
-echo "📁 Criando diretórios necessários..."
+# Create necessary directories
+echo "📁 Creating necessary directories..."
 mkdir -p data public/uploads
 
-# Ajustar permissões para permitir escrita pelo container
-echo "🔐 Ajustando permissões..."
+# Adjust permissions to allow writing by the container
+# The container entrypoint will adjust final permissions, but we ensure they exist
+echo "🔐 Adjusting permissions..."
 chmod -R 777 public/uploads
-chmod -R 755 data
+chmod -R 777 data
 
-# Verificar se o arquivo .env existe
+# Check if .env file exists
 if [ ! -f .env ]; then
     echo ""
-    echo "⚠️  Arquivo .env não encontrado!"
+    echo "⚠️  .env file not found!"
     echo ""
-    read -p "Deseja criar um arquivo .env com valores padrão? (s/n) " -n 1 -r
+    read -p "Do you want to create a .env file with default values? (y/n) " -n 1 -r
     echo ""
-    if [[ $REPLY =~ ^[Ss]$ ]]; then
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
         cat > .env << 'EOF'
 NODE_ENV=production
 PORT=3000
 
-# Credenciais de autenticação
+# Authentication credentials
 AUTH_USERNAME=admin
-AUTH_PASSWORD=SuaSenhaSegura123!
-AUTH_SECRET=sua-chave-muito-segura-de-32-caracteres
+AUTH_PASSWORD=YourSecurePassword123!
+AUTH_SECRET=your-very-secure-32-character-key
 EOF
-        echo "✅ Arquivo .env criado!"
+        echo "✅ .env file created!"
         echo ""
-        echo "⚠️  IMPORTANTE: Edite o arquivo .env e altere as senhas antes de usar em produção!"
+        echo "⚠️  IMPORTANT: Edit the .env file and change the passwords before using in production!"
     else
         echo ""
-        echo "❌ Configure o arquivo .env antes de continuar."
-        echo "   Copie o arquivo env.example: cp env.example .env"
+        echo "❌ Configure the .env file before continuing."
+        echo "   Copy the env.example file: cp env.example .env"
         exit 1
     fi
 fi
 
 echo ""
-echo "✅ Configuração concluída!"
+echo "✅ Setup completed!"
 echo ""
-echo "🚀 Para iniciar a aplicação:"
+echo "🚀 To start the application:"
 echo "   docker-compose up -d"
 echo ""
-echo "📊 Para ver os logs:"
+echo "📊 To view logs:"
 echo "   docker-compose logs -f"
 echo ""
-echo "🌐 Acesse: http://localhost:3000"
+echo "🌐 Access: http://localhost:3000"
 echo ""
-

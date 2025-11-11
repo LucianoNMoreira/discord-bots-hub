@@ -1,11 +1,10 @@
 #!/bin/bash
 
-echo "🔍 Monitorando logs do Discord Bots Hub..."
-echo "📝 Tente fazer upload do avatar agora e observe os logs abaixo:"
+echo "🔍 Monitoring Discord Bots Hub logs..."
+echo "📝 Try uploading an avatar now and observe the logs below:"
 echo ""
 echo "-----------------------------------------------------------"
 echo ""
 
 cd "$(dirname "$0")"
 docker-compose logs -f --tail=20
-

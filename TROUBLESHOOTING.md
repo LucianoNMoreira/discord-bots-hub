@@ -1,123 +1,123 @@
 # 🔧 Troubleshooting - Discord Bots Management
 
-## Problemas Comuns e Soluções Rápidas
+## Common Issues and Quick Solutions
 
-### 🔒 Erro "Unauthorized" ao fazer upload ou outras ações
+### 🔒 "Unauthorized" error when uploading or performing other actions
 
-**Sintomas:**
-- Erro 401 Unauthorized ao fazer upload de avatar
-- Erro 401 em requisições após mudanças no `.env`
-- Sessão aparentemente válida mas ações falham
+**Symptoms:**
+- 401 Unauthorized error when uploading avatar
+- 401 error on requests after changes to `.env`
+- Session appears valid but actions fail
 
-**Causa:**
-O `AUTH_SECRET` foi alterado, invalidando todas as sessões existentes.
+**Cause:**
+The `AUTH_SECRET` was changed, invalidating all existing sessions.
 
-**Solução:**
-1. **Limpe o cache do navegador** ou **abra uma aba anônima**
-2. Faça **logout** (se possível)
-3. Faça **login novamente**
+**Solution:**
+1. **Clear browser cache** or **open an incognito tab**
+2. **Logout** (if possible)
+3. **Login again**
 
 ```bash
-# Ou reinicie o container e faça login novamente
+# Or restart the container and login again
 docker-compose restart
 ```
 
 ---
 
-### 🤖 Bots aparecem como "Unauthorized" / Erro de descriptografia
+### 🤖 Bots appear as "Unauthorized" / Decryption error
 
-**Sintomas:**
-- Bots mostram status "Unauthorized"
-- Logs mostram: `Error: Unsupported state or unable to authenticate data`
-- Bots não inicializam
+**Symptoms:**
+- Bots show "Unauthorized" status
+- Logs show: `Error: Unsupported state or unable to authenticate data`
+- Bots don't initialize
 
-**Causa:**
-Os tokens dos bots foram criptografados com um `AUTH_SECRET` diferente do atual.
+**Cause:**
+Bot tokens were encrypted with a different `AUTH_SECRET` than the current one.
 
-**Soluções:**
+**Solutions:**
 
-**Opção 1: Usar a chave antiga**
+**Option 1: Use the old key**
 ```bash
-# Edite o .env e coloque a chave original
-AUTH_SECRET=chave-original-que-foi-usada
+# Edit .env and set the original key
+AUTH_SECRET=original-key-that-was-used
 docker-compose restart
 ```
 
-**Opção 2: Re-adicionar os bots**
-1. Acesse a interface: http://localhost:3000
-2. Delete os bots existentes
-3. Adicione novamente com os tokens do Discord
-4. Os tokens serão re-criptografados com a nova chave
+**Option 2: Re-add the bots**
+1. Access the interface: http://localhost:3000
+2. Delete existing bots
+3. Add them again with Discord tokens
+4. Tokens will be re-encrypted with the new key
 
-**Opção 3: Limpar dados e começar do zero**
+**Option 3: Clear data and start from scratch**
 ```bash
 docker-compose down
-# Backup (opcional)
+# Backup (optional)
 cp data/bots.json data/bots.json.backup
-# Limpar
+# Clear
 echo "[]" > data/bots.json
 docker-compose up -d
 ```
 
 ---
 
-### 📤 Erro ao fazer upload de avatar
+### 📤 Error uploading avatar
 
-**Sintomas:**
-- Erro ao tentar fazer upload de imagem
+**Symptoms:**
+- Error when trying to upload image
 - "Failed to upload avatar"
 
-**Causa:**
-Problemas de permissão no diretório de uploads.
+**Cause:**
+Permission issues in the uploads directory.
 
-**Solução:**
+**Solution:**
 ```bash
-# Ajustar permissões
+# Adjust permissions
 chmod -R 777 public/uploads
 
-# Reiniciar container
+# Restart container
 docker-compose restart
 ```
 
 ---
 
-### 🔴 Container não inicia / Internal Server Error
+### 🔴 Container won't start / Internal Server Error
 
-**Sintomas:**
-- Container para logo após iniciar
-- Erro 500 ao acessar a aplicação
-- Logs mostram erros de variáveis de ambiente
+**Symptoms:**
+- Container stops shortly after starting
+- Error 500 when accessing the application
+- Logs show environment variable errors
 
-**Solução:**
+**Solution:**
 ```bash
-# 1. Verificar variáveis de ambiente
+# 1. Check environment variables
 docker exec discord-bots-hub env | grep AUTH
 
-# 2. Se não estiverem configuradas, edite o .env
+# 2. If not configured, edit .env
 cat > .env << 'EOF'
 NODE_ENV=production
 PORT=3000
 AUTH_USERNAME=admin
-AUTH_PASSWORD=sua-senha-aqui
-AUTH_SECRET=sua-chave-de-32-caracteres-aqui
+AUTH_PASSWORD=your-password-here
+AUTH_SECRET=your-32-character-key-here
 EOF
 
-# 3. Reiniciar
+# 3. Restart
 docker-compose down
 docker-compose up -d
 ```
 
 ---
 
-### 🔄 Erros após atualizar código/Docker
+### 🔄 Errors after updating code/Docker
 
-**Sintomas:**
-- Aplicação com comportamento estranho após pull/update
-- Erros que não existiam antes
+**Symptoms:**
+- Application with strange behavior after pull/update
+- Errors that didn't exist before
 
-**Solução:**
+**Solution:**
 ```bash
-# Rebuild completo sem cache
+# Complete rebuild without cache
 docker-compose down
 docker-compose build --no-cache
 docker-compose up -d
@@ -125,113 +125,112 @@ docker-compose up -d
 
 ---
 
-### 📝 JSON inválido / Erro ao ler bots
+### 📝 Invalid JSON / Error reading bots
 
-**Sintomas:**
+**Symptoms:**
 - `SyntaxError: Unexpected end of JSON input`
-- Aplicação não carrega lista de bots
+- Application doesn't load bot list
 
-**Solução:**
+**Solution:**
 ```bash
-# Verificar se o JSON está válido
+# Check if JSON is valid
 cat data/bots.json
 
-# Se estiver corrompido, restaurar
+# If corrupted, restore
 echo "[]" > data/bots.json
 docker-compose restart
 ```
 
 ---
 
-### 🌐 Não consegue acessar http://localhost:3000
+### 🌐 Cannot access http://localhost:3000
 
-**Sintomas:**
-- Conexão recusada
+**Symptoms:**
+- Connection refused
 - Timeout
 
-**Soluções:**
+**Solutions:**
 ```bash
-# 1. Verificar se o container está rodando
+# 1. Check if container is running
 docker-compose ps
 
-# 2. Verificar se a porta está ocupada
+# 2. Check if port is in use
 lsof -i :3000
 
-# 3. Verificar logs
+# 3. Check logs
 docker-compose logs -f
 
-# 4. Se necessário, usar outra porta
+# 4. If needed, use another port
 PORT=3001 docker-compose up -d
-# Acesse: http://localhost:3001
+# Access: http://localhost:3001
 ```
 
 ---
 
-### 🧹 Limpar tudo e começar do zero
+### 🧹 Clean everything and start from scratch
 
-**Quando usar:**
-- Problemas persistentes após várias tentativas
-- Quer garantir um estado limpo
+**When to use:**
+- Persistent issues after several attempts
+- Want to ensure a clean state
 
-**Comandos:**
+**Commands:**
 ```bash
-# Parar e remover tudo
+# Stop and remove everything
 docker-compose down -v
 
-# Limpar imagens antigas
+# Clean old images
 docker image prune -a
 
-# Limpar dados (CUIDADO: perde todos os bots)
+# Clear data (WARNING: loses all bots)
 echo "[]" > data/bots.json
 rm -rf public/uploads/*
 touch public/uploads/.gitkeep
 
-# Recriar .env
+# Recreate .env
 ./docker-setup.sh
 
-# Rebuild e iniciar
+# Rebuild and start
 docker-compose build --no-cache
 docker-compose up -d
 ```
 
 ---
 
-## 🔍 Verificação Rápida
+## 🔍 Quick Verification
 
-Execute este checklist quando tiver problemas:
+Run this checklist when you have issues:
 
 ```bash
-# 1. Container está rodando?
+# 1. Is container running?
 docker-compose ps
 
-# 2. Logs mostram erros?
+# 2. Do logs show errors?
 docker-compose logs --tail=50
 
-# 3. Variáveis de ambiente estão configuradas?
+# 3. Are environment variables configured?
 docker exec discord-bots-hub env | grep AUTH
 
-# 4. Permissões do diretório de uploads?
+# 4. Uploads directory permissions?
 ls -la public/uploads/
 
-# 5. JSON dos bots está válido?
+# 5. Is bots JSON valid?
 cat data/bots.json | jq .
 ```
 
 ---
 
-## 📞 Ainda com problemas?
+## 📞 Still having issues?
 
-1. Verifique os logs detalhados: `docker-compose logs -f`
-2. Consulte a documentação completa: [DOCKER.md](DOCKER.md)
-3. Abra uma issue no repositório com os logs
+1. Check detailed logs: `docker-compose logs -f`
+2. Consult full documentation: [DOCKER.md](DOCKER.md)
+3. Open an issue in the repository with the logs
 
 ---
 
-## 💡 Dicas de Prevenção
+## 💡 Prevention Tips
 
-✅ **Faça backup** do `.env` e `data/bots.json` antes de mudanças  
-✅ **Use a mesma** `AUTH_SECRET` sempre que possível  
-✅ **Faça logout/login** após mudar variáveis de ambiente  
-✅ **Monitore os logs** regularmente: `docker-compose logs -f`  
-✅ **Verifique permissões** após montar volumes
-
+✅ **Backup** `.env` and `data/bots.json` before changes  
+✅ **Use the same** `AUTH_SECRET` whenever possible  
+✅ **Logout/login** after changing environment variables  
+✅ **Monitor logs** regularly: `docker-compose logs -f`  
+✅ **Check permissions** after mounting volumes

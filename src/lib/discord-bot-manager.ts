@@ -300,11 +300,11 @@ class DiscordBotManager {
         
         // Provide helpful error messages for common issues
         if (error.message.includes("disallowed intents") || error.message.includes("Used disallowed intents")) {
-          errorMessage = `Intents não habilitados no Discord Developer Portal. Acesse https://discord.com/developers/applications, selecione sua aplicação, vá em Bot → Privileged Gateway Intents e habilite: MESSAGE CONTENT INTENT e SERVER MEMBERS INTENT.`;
+          errorMessage = `Intents not enabled in Discord Developer Portal. Go to https://discord.com/developers/applications, select your application, go to Bot → Privileged Gateway Intents and enable: MESSAGE CONTENT INTENT and SERVER MEMBERS INTENT.`;
         } else if (error.message.includes("Invalid token") || error.message.includes("401")) {
-          errorMessage = "Token inválido. Verifique se o token do bot está correto.";
+          errorMessage = "Invalid token. Please verify that the bot token is correct.";
         } else if (error.message.includes("ENOTFOUND") || error.message.includes("ECONNREFUSED")) {
-          errorMessage = "Erro de conexão. Verifique sua conexão com a internet.";
+          errorMessage = "Connection error. Please check your internet connection.";
         }
       }
       

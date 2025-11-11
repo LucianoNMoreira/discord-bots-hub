@@ -25,7 +25,7 @@ export function BotList({
   const [deletingBotId, setDeletingBotId] = useState<string | null>(null);
 
   async function handleDelete(botId: string) {
-    if (!confirm(tCommon("actions.confirmDelete") || "Tem certeza que deseja remover este bot?")) {
+    if (!confirm(tCommon("actions.confirmDelete") || "Are you sure you want to delete this bot?")) {
       return;
     }
 

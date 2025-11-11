@@ -3,20 +3,20 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
-  // Habilitar modo standalone para Docker
+  // Enable standalone mode for Docker
   output: 'standalone',
-  // Desabilitar verificação de tipos e ESLint durante o build (para acelerar o build Docker)
+  // Disable type checking and ESLint during build (to speed up Docker build)
   typescript: {
     ignoreBuildErrors: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // Configurar webpack para lidar com módulos nativos
+  // Configure webpack to handle native modules
   webpack: (config, { isServer }) => {
     if (isServer) {
-      // Marcar módulos nativos e discord.js como externos
-      // para que não sejam empacotados pelo webpack
+      // Mark native modules and discord.js as externals
+      // so they are not bundled by webpack
       config.externals.push({
         'zlib-sync': 'commonjs zlib-sync',
         'discord.js': 'commonjs discord.js',
