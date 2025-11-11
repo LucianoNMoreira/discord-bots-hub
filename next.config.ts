@@ -5,12 +5,9 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   // Enable standalone mode for Docker
   output: 'standalone',
-  // Disable type checking and ESLint during build (to speed up Docker build)
+  // Disable type checking during build (to speed up Docker build)
   typescript: {
     ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
   },
   // Configure webpack to handle native modules
   webpack: (config, { isServer }) => {
@@ -26,6 +23,9 @@ const nextConfig: NextConfig = {
     }
     return config;
   },
+  // Add empty turbopack config to silence the warning
+  // We're using webpack explicitly via --webpack flag
+  turbopack: {},
 };
 
 export default nextConfig;

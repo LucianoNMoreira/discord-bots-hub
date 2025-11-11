@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { BotStatusControl } from "./bot-status-control";
 import { useTranslations } from "@/i18n/translation-context";
+import { generateDiscordAuthUrl } from "@/lib/discord-utils";
 import type { Bot } from "@/lib/bots-store";
 
 type BotListProps = {
@@ -124,6 +125,25 @@ export function BotList({
                   {commonLabels.guild}
                 </p>
                 <p className="text-slate-200">{bot.discord.guildId}</p>
+                {bot.discord.applicationId && (() => {
+                  const authUrl = generateDiscordAuthUrl(bot.discord.applicationId!);
+                  return (
+                    <>
+                      <p className="font-semibold uppercase tracking-wide text-slate-400">
+                        {tBots("card.authorizationUrl") ?? "URL de autorização"}
+                      </p>
+                      <a
+                        href={authUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block truncate text-indigo-400 transition hover:text-indigo-300 hover:underline"
+                        title={authUrl}
+                      >
+                        {authUrl}
+                      </a>
+                    </>
+                  );
+                })()}
               </div>
             </article>
           ))}

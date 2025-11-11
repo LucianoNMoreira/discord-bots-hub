@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { useTranslations } from "@/i18n/translation-context";
+import { generateDiscordAuthUrl } from "@/lib/discord-utils";
 
 type ApiError = {
   error: string;
@@ -25,6 +26,7 @@ type BotData = {
   discord: {
     guildId: string;
     botToken: string;
+    applicationId?: string;
   };
 };
 
@@ -40,6 +42,7 @@ const defaultBot = {
   webhookUrl: "",
   guildId: "",
   botToken: "",
+  applicationId: "",
 };
 
 type BotFormProps = {
@@ -95,6 +98,7 @@ export function BotForm({ botId, onSuccess }: BotFormProps) {
               webhookUrl: data.webhookUrl || "",
               guildId: data.discord.guildId || "",
               botToken: data.discord.botToken || "",
+              applicationId: data.discord.applicationId || "",
             });
           } else {
             throw new Error("Invalid bot data received");
@@ -128,6 +132,12 @@ export function BotForm({ botId, onSuccess }: BotFormProps) {
       (isEditMode || form.botToken.trim().length > 0) // Token required only for new bots
     );
   }, [form, isEditMode]);
+
+  const authUrl = useMemo(() => {
+    return form.applicationId
+      ? generateDiscordAuthUrl(form.applicationId)
+      : null;
+  }, [form.applicationId]);
 
   function handleInputChange(
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -220,6 +230,12 @@ export function BotForm({ botId, onSuccess }: BotFormProps) {
       if (form.botToken.trim().length > 0) {
         (payload.discord as { guildId: string; botToken: string }).botToken =
           form.botToken;
+      }
+
+      // Include applicationId if provided
+      if (form.applicationId.trim().length > 0) {
+        (payload.discord as { guildId: string; applicationId?: string }).applicationId =
+          form.applicationId;
       }
 
       const response = await fetch(url, {
@@ -431,6 +447,31 @@ export function BotForm({ botId, onSuccess }: BotFormProps) {
               className="w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-slate-100 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
               required
             />
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+              {fields.applicationId}
+            </label>
+            <input
+              name="applicationId"
+              value={form.applicationId}
+              onChange={handleInputChange}
+              placeholder={placeholders.applicationId}
+              className="w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-slate-100 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+            />
+            {authUrl && (
+              <p className="text-xs text-slate-500">
+                {tBotForm("authUrlHint")}:{" "}
+                <a
+                  href={authUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-indigo-400 hover:text-indigo-300 underline break-all"
+                >
+                  {authUrl}
+                </a>
+              </p>
+            )}
           </div>
         </div>
         <p className="mt-3 text-xs text-slate-500">

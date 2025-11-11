@@ -14,6 +14,7 @@ const createBotSchema = z.object({
   discord: z.object({
     guildId: z.string().min(1),
     botToken: z.string().min(1),
+    applicationId: z.string().optional(),
   }),
 });
 

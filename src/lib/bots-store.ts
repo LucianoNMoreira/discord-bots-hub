@@ -20,11 +20,14 @@ export type StoredBot = {
   discord: {
     guildId: string;
     token: string;
+    applicationId?: string;
   };
 };
 
 export type Bot = Omit<StoredBot, "discord"> & {
-  discord: Omit<StoredBot["discord"], "token">;
+  discord: Omit<StoredBot["discord"], "token"> & {
+    applicationId?: string;
+  };
 };
 
 export type CreateBotInput = {
@@ -36,6 +39,7 @@ export type CreateBotInput = {
   discord: {
     guildId: string;
     botToken: string;
+    applicationId?: string;
   };
 };
 
@@ -48,6 +52,7 @@ export type UpdateBotInput = {
   discord: {
     guildId: string;
     botToken?: string; // Optional - only update if provided
+    applicationId?: string;
   };
 };
 
@@ -76,6 +81,7 @@ function sanitizeBot(bot: StoredBot): Bot {
     ...bot,
     discord: {
       guildId: bot.discord.guildId,
+      applicationId: bot.discord.applicationId,
     },
   };
 }
@@ -100,6 +106,7 @@ export async function createBot(input: CreateBotInput): Promise<Bot> {
     discord: {
       guildId: input.discord.guildId,
       token: encrypt(env.AUTH_SECRET, input.discord.botToken),
+      applicationId: input.discord.applicationId,
     },
   };
   bots.push(storedBot);
@@ -142,6 +149,9 @@ export async function updateBot(
         input.discord.botToken !== undefined
           ? encrypt(env.AUTH_SECRET, input.discord.botToken)
           : existingBot.discord.token, // Keep existing token if not provided
+      applicationId: input.discord.applicationId !== undefined
+        ? input.discord.applicationId
+        : existingBot.discord.applicationId, // Keep existing applicationId if not provided
     },
   };
 

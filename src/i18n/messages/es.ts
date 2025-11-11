@@ -114,6 +114,7 @@ const es = {
     card: {
       guild: "Servidor",
       interactionOriginBadge: "Origen de interacción",
+      authorizationUrl: "URL de autorización",
     },
   },
   botForm: {
@@ -125,6 +126,7 @@ const es = {
       webhook: "URL del webhook",
       token: "Token del bot",
       guildId: "ID del servidor",
+      applicationId: "ID de la aplicación (Client ID)",
     },
     placeholders: {
       name: "Asistente de soporte",
@@ -132,6 +134,7 @@ const es = {
       webhook: "https://tu-instancia-n8n/webhook/...",
       guildId: "123456789012345678",
       token: "Pega el token del bot de Discord",
+      applicationId: "123456789012345678",
     },
     options: {
       origins: {
@@ -155,6 +158,7 @@ const es = {
       botUpdated: "Bot actualizado correctamente",
       botUpdateError: "Error al actualizar el bot",
     },
+    authUrlHint: "URL de autorización",
   },
 };
 

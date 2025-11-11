@@ -25,6 +25,7 @@ const updateBotSchema = z.object({
   discord: z.object({
     guildId: z.string().min(1),
     botToken: z.string().min(1).optional(),
+    applicationId: z.string().optional(),
   }),
 });
 
@@ -60,6 +61,7 @@ export async function GET(_request: Request, context: RouteContext) {
     discord: {
       guildId: bot.discord.guildId,
       botToken: decryptedToken,
+      applicationId: bot.discord.applicationId,
     },
   });
 }
