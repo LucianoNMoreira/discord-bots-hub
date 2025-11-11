@@ -1,116 +1,116 @@
-# 🐳 Guia Docker - Discord Bots Management
+# 🐳 Docker Guide - Discord Bots Management
 
-Este guia explica como executar o projeto usando Docker e Docker Compose.
+This guide explains how to run the project using Docker and Docker Compose.
 
-## 📋 Pré-requisitos
+## 📋 Prerequisites
 
-- Docker (v20.10 ou superior)
-- Docker Compose (v2.0 ou superior)
+- Docker (v20.10 or higher)
+- Docker Compose (v2.0 or higher)
 
-## 🚀 Início Rápido
+## 🚀 Quick Start
 
-### 1. Configurar Variáveis de Ambiente
+### 1. Configure Environment Variables
 
-Crie um arquivo `.env` na raiz do projeto:
+Create a `.env` file in the project root:
 
 ```bash
 cp .env.docker .env
 ```
 
-Edite o arquivo `.env` e configure as variáveis:
+Edit the `.env` file and configure the variables:
 
 ```env
 NODE_ENV=production
 PORT=3000
 AUTH_USERNAME=admin
-AUTH_PASSWORD=sua-senha-segura-aqui
-AUTH_SECRET=sua-chave-secreta-de-32-caracteres-aqui
+AUTH_PASSWORD=your-secure-password-here
+AUTH_SECRET=your-32-character-secret-key-here
 ```
 
-> ⚠️ **Importante**: Altere `AUTH_PASSWORD` e `AUTH_SECRET` para valores seguros!
+> ⚠️ **Important**: Change `AUTH_PASSWORD` and `AUTH_SECRET` to secure values!
 
-### 2. Executar em Produção
+### 2. Run in Production
 
 ```bash
-# Build e iniciar o container
+# Build and start the container
 docker-compose up -d
 
-# Verificar logs
+# Check logs
 docker-compose logs -f
 
-# Parar o container
+# Stop the container
 docker-compose down
 ```
 
-A aplicação estará disponível em: `http://localhost:3000`
+The application will be available at: `http://localhost:3000`
 
-### 3. Executar em Desenvolvimento
+### 3. Run in Development
 
-Para desenvolvimento com hot reload:
+For development with hot reload:
 
 ```bash
-# Build e iniciar em modo desenvolvimento
+# Build and start in development mode
 docker-compose -f docker-compose.dev.yml up
 
-# Ou em background
+# Or in background
 docker-compose -f docker-compose.dev.yml up -d
 
-# Parar
+# Stop
 docker-compose -f docker-compose.dev.yml down
 ```
 
-## 🏗️ Arquitetura Docker
+## 🏗️ Docker Architecture
 
-### Arquivos Docker
+### Docker Files
 
-- **`Dockerfile`**: Build otimizado para produção (multi-stage)
-- **`Dockerfile.dev`**: Build para desenvolvimento com hot reload
-- **`docker-compose.yml`**: Orquestração para produção
-- **`docker-compose.dev.yml`**: Orquestração para desenvolvimento
-- **`.dockerignore`**: Arquivos excluídos do build
+- **`Dockerfile`**: Optimized build for production (multi-stage)
+- **`Dockerfile.dev`**: Build for development with hot reload
+- **`docker-compose.yml`**: Orchestration for production
+- **`docker-compose.dev.yml`**: Orchestration for development
+- **`.dockerignore`**: Files excluded from build
 
 ### Multi-Stage Build
 
-O Dockerfile de produção usa 3 stages:
+The production Dockerfile uses 3 stages:
 
-1. **deps**: Instala dependências
-2. **builder**: Build da aplicação Next.js
-3. **runner**: Imagem final otimizada e mínima
+1. **deps**: Install dependencies
+2. **builder**: Build the Next.js application
+3. **runner**: Final optimized and minimal image
 
-### Volumes Persistentes
+### Persistent Volumes
 
-Os seguintes diretórios são montados como volumes para persistir dados:
+The following directories are mounted as volumes to persist data:
 
-- `./data`: Dados dos bots e logs de mensagens
-- `./public/uploads`: Avatares e uploads
+- `./data`: Bot data and message logs
+- `./public/uploads`: Avatars and uploads
 
-## 🔧 Comandos Úteis
+## 🔧 Useful Commands
 
-### Build Manual
+### Manual Build
 
 ```bash
-# Build da imagem
+# Build the image
 docker build -t discord-bots-hub .
 
-# Build para desenvolvimento
+# Build for development
 docker build -f Dockerfile.dev -t discord-bots-hub:dev .
 ```
 
-### Executar Container Manualmente
+### Run Container Manually
 
 ```bash
-# Produção
+# Production
 docker run -d \
   --name discord-bots-hub \
   -p 3000:3000 \
   -v $(pwd)/data:/app/data \
   -v $(pwd)/public/uploads:/app/public/uploads \
   -e AUTH_USERNAME=admin \
-  -e AUTH_PASSWORD=sua-senha \
-  -e AUTH_SECRET=sua-chave-secreta-32-chars \
+  -e AUTH_PASSWORD=your-password \
+  -e AUTH_SECRET=your-32-char-secret-key \
   discord-bots-hub
 
-# Desenvolvimento
+# Development
 docker run -d \
   --name discord-bots-hub-dev \
   -p 3000:3000 \
@@ -120,97 +120,97 @@ docker run -d \
   discord-bots-hub:dev
 ```
 
-### Gerenciamento
+### Management
 
 ```bash
-# Ver logs
+# View logs
 docker logs discord-bots-hub
-docker logs -f discord-bots-hub  # seguir logs
+docker logs -f discord-bots-hub  # follow logs
 
-# Acessar shell do container
+# Access container shell
 docker exec -it discord-bots-hub sh
 
-# Reiniciar container
+# Restart container
 docker restart discord-bots-hub
 
-# Parar e remover
+# Stop and remove
 docker stop discord-bots-hub
 docker rm discord-bots-hub
 
-# Remover imagem
+# Remove image
 docker rmi discord-bots-hub
 ```
 
 ### Docker Compose
 
 ```bash
-# Subir serviços
+# Start services
 docker-compose up -d
 
-# Ver status
+# Check status
 docker-compose ps
 
-# Ver logs
+# View logs
 docker-compose logs -f
 
-# Parar serviços
+# Stop services
 docker-compose stop
 
-# Parar e remover containers
+# Stop and remove containers
 docker-compose down
 
-# Rebuild e reiniciar
+# Rebuild and restart
 docker-compose up -d --build
 
-# Limpar tudo (containers, volumes, networks)
+# Clean everything (containers, volumes, networks)
 docker-compose down -v
 ```
 
 ## 📊 Health Check
 
-O container inclui um health check que verifica se a aplicação está respondendo:
+The container includes a health check that verifies if the application is responding:
 
 ```bash
-# Verificar saúde do container
+# Check container health
 docker inspect --format='{{.State.Health.Status}}' discord-bots-hub
 ```
 
-Status possíveis:
-- `healthy`: Aplicação funcionando
-- `unhealthy`: Aplicação com problemas
-- `starting`: Iniciando
+Possible statuses:
+- `healthy`: Application working
+- `unhealthy`: Application with issues
+- `starting`: Starting
 
-## 🔒 Segurança
+## 🔒 Security
 
-### Boas Práticas Implementadas
+### Implemented Best Practices
 
-1. ✅ Container roda com usuário não-root (`nextjs:nodejs`)
-2. ✅ Imagem Alpine Linux (menor superfície de ataque)
-3. ✅ Multi-stage build (imagem final mínima)
-4. ✅ Variáveis sensíveis via `.env` (não commitadas)
-5. ✅ `.dockerignore` para excluir arquivos desnecessários
+1. ✅ Container runs with non-root user (`nextjs:nodejs`)
+2. ✅ Alpine Linux image (smaller attack surface)
+3. ✅ Multi-stage build (minimal final image)
+4. ✅ Sensitive variables via `.env` (not committed)
+5. ✅ `.dockerignore` to exclude unnecessary files
 
-### Recomendações
+### Recommendations
 
-- Use senhas fortes para `AUTH_PASSWORD`
-- Gere uma chave aleatória de 32 caracteres para `AUTH_SECRET`
-- Não commite o arquivo `.env` no Git
-- Use secrets em produção (Docker Swarm ou Kubernetes)
+- Use strong passwords for `AUTH_PASSWORD`
+- Generate a random 32-character key for `AUTH_SECRET`
+- Do not commit the `.env` file to Git
+- Use secrets in production (Docker Swarm or Kubernetes)
 
-## 🌐 Deploy em Produção
+## 🌐 Production Deployment
 
-### Usando Docker Compose
+### Using Docker Compose
 
 ```bash
-# Em um servidor com Docker instalado
-git clone <seu-repositorio>
+# On a server with Docker installed
+git clone <your-repository>
 cd discord-bots-management
 cp .env.docker .env
-# Edite o .env com valores de produção
+# Edit the .env with production values
 docker-compose up -d
 ```
 
-### Usando Docker Swarm
+### Using Docker Swarm
 
 ```bash
 docker stack deploy -c docker-compose.yml discord-bots
@@ -218,12 +218,12 @@ docker stack deploy -c docker-compose.yml discord-bots
 
 ### Reverse Proxy (Nginx)
 
-Exemplo de configuração Nginx:
+Nginx configuration example:
 
 ```nginx
 server {
     listen 80;
-    server_name seu-dominio.com;
+    server_name your-domain.com;
 
     location / {
         proxy_pass http://localhost:3000;
@@ -238,110 +238,109 @@ server {
 
 ## 🐛 Troubleshooting
 
-### Container não inicia
+### Container won't start
 
 ```bash
-# Verificar logs
+# Check logs
 docker-compose logs
 
-# Verificar se a porta está em uso
+# Check if port is in use
 lsof -i :3000
 ```
 
-### Erro de permissões / Falha no upload de avatar
+### Permission error / Avatar upload failure
 
-**Problema**: Erro ao fazer upload de avatar ou criar arquivos.
+**Problem**: Error when uploading avatar or creating files.
 
-**Solução**:
+**Solution**:
 ```bash
-# Ajustar permissões dos volumes
+# Adjust volume permissions
 chmod -R 777 public/uploads
 chmod -R 755 data
 
-# Reiniciar o container
+# Restart the container
 docker-compose restart
 ```
 
-**Ou use o script de setup**:
+**Or use the setup script**:
 ```bash
 ./docker-setup.sh
 ```
 
-### Bots aparecem como "Unauthorized" ou erro de descriptografia
+### Bots appear as "Unauthorized" or decryption error
 
-**Problema**: `Error: Unsupported state or unable to authenticate data`
+**Problem**: `Error: Unsupported state or unable to authenticate data`
 
-**Causa**: Os tokens dos bots foram criptografados com uma chave diferente da configurada no `.env`.
+**Cause**: Bot tokens were encrypted with a different key than the one configured in `.env`.
 
-**Soluções**:
+**Solutions**:
 
-1. **Usar a mesma chave de criptografia**:
-   - Se você tinha um `.env` anterior, use a mesma `AUTH_SECRET`
-   - Copie a chave antiga para o novo `.env`
+1. **Use the same encryption key**:
+   - If you had a previous `.env`, use the same `AUTH_SECRET`
+   - Copy the old key to the new `.env`
 
-2. **Re-adicionar os bots**:
-   - Delete os bots existentes na interface
-   - Adicione-os novamente com a nova chave
-   - Os tokens serão re-criptografados com a chave nova
+2. **Re-add the bots**:
+   - Delete existing bots in the interface
+   - Add them again with the new key
+   - Tokens will be re-encrypted with the new key
 
-3. **Limpar dados e começar do zero**:
+3. **Clear data and start from scratch**:
    ```bash
-   # Parar containers
+   # Stop containers
    docker-compose down
    
-   # Backup (opcional)
+   # Backup (optional)
    cp data/bots.json data/bots.json.backup
    
-   # Limpar dados
+   # Clear data
    echo "[]" > data/bots.json
    
-   # Reiniciar
+   # Restart
    docker-compose up -d
    ```
 
-### Build muito lento
+### Build is very slow
 
 ```bash
-# Limpar cache do Docker
+# Clear Docker cache
 docker builder prune
 
-# Build sem cache
+# Build without cache
 docker-compose build --no-cache
 ```
 
-### Não consegue conectar aos bots
+### Cannot connect to bots
 
-Certifique-se de que:
-1. As variáveis de ambiente estão corretas
-2. Os volumes estão montados corretamente
-3. A aplicação tem acesso à rede
-4. Os tokens do Discord são válidos
+Make sure that:
+1. Environment variables are correct
+2. Volumes are mounted correctly
+3. The application has network access
+4. Discord tokens are valid
 
-### Erro "Internal Server Error"
+### "Internal Server Error"
 
-**Problema**: Erro 500 ao acessar a aplicação.
+**Problem**: Error 500 when accessing the application.
 
-**Solução**:
+**Solution**:
 ```bash
-# Verificar logs detalhados
+# Check detailed logs
 docker-compose logs -f
 
-# Verificar se as variáveis de ambiente estão configuradas
+# Check if environment variables are configured
 docker exec discord-bots-hub env | grep AUTH
 
-# Se não estiverem, parar e reconfigurar
+# If not, stop and reconfigure
 docker-compose down
-# Edite o .env com valores corretos
+# Edit the .env with correct values
 docker-compose up -d
 ```
 
-## 📚 Recursos Adicionais
+## 📚 Additional Resources
 
-- [Documentação Next.js Docker](https://nextjs.org/docs/deployment#docker-image)
+- [Next.js Docker Documentation](https://nextjs.org/docs/deployment#docker-image)
 - [Docker Docs](https://docs.docker.com/)
 - [Docker Compose Docs](https://docs.docker.com/compose/)
 
-## 🤝 Contribuindo
+## 🤝 Contributing
 
-Se encontrar problemas com a configuração Docker, por favor abra uma issue!
-
+If you encounter issues with the Docker configuration, please open an issue!
