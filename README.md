@@ -9,15 +9,23 @@
 
 ## Table of contents
 
-1. [Why Discord Bots Hub?](#why-discord-bots-hub)
-2. [Key features](#key-features)
-3. [Architecture at a glance](#architecture-at-a-glance)
-4. [Getting started](#getting-started)
-5. [Discord configuration guide](#discord-configuration-guide)
-6. [Webhook payload reference](#webhook-payload-reference)
-7. [Roadmap & ideas](#roadmap--ideas)
-8. [Contributing](#contributing)
-9. [License](#license)
+- [Table of contents](#table-of-contents)
+- [Why Discord Bots Hub?](#why-discord-bots-hub)
+- [Key features](#key-features)
+- [Architecture at a glance](#architecture-at-a-glance)
+- [Getting started](#getting-started)
+  - [Requirements](#requirements)
+  - [1. Clone \& install](#1-clone--install)
+  - [2. Configure environment variables](#2-configure-environment-variables)
+  - [3. Run locally](#3-run-locally)
+  - [4. Production build](#4-production-build)
+- [Discord configuration guide](#discord-configuration-guide)
+- [Webhook payload reference](#webhook-payload-reference)
+- [Roadmap \& ideas](#roadmap--ideas)
+- [Contributing](#contributing)
+  - [Quick contribution checklist](#quick-contribution-checklist)
+- [Known issues](#known-issues)
+- [License](#license)
 
 ---
 
@@ -180,6 +188,14 @@ Additional HTTP headers:
 - ⏳ Built-in analytics dashboards (message volume per bot).
 - ⏳ Webhook retry/backoff strategy with dead letter queue.
 - 💡 Have a suggestion? [Open an issue](https://github.com/<your-org>/discord-bots-management/issues).
+
+---
+
+## Known issues
+
+- **Duplicate webhook deliveries** – In rare scenarios Discord can emit `MESSAGE_CREATE` twice (gateway reconnect, manual RAW fallback). The hub deduplicates by message ID, but depending on the consumer you may still see retries. Implement idempotency using `messageId`/`X-Discord-Message-Id` on your webhook handler.
+
+Add more items here as we triage bugs. Contributions welcome!
 
 ---
 
