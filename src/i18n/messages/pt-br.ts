@@ -114,6 +114,7 @@ const ptBr = {
     card: {
       guild: "Servidor",
       interactionOriginBadge: "Origem da interação",
+      applicationId: "ID da aplicação",
       authorizationUrl: "URL de autorização",
     },
   },

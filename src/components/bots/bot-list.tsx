@@ -130,6 +130,10 @@ export function BotList({
                   return (
                     <>
                       <p className="font-semibold uppercase tracking-wide text-slate-400">
+                        {tBots("card.applicationId") ?? "ID da aplicação"}
+                      </p>
+                      <p className="text-slate-200">{bot.discord.applicationId}</p>
+                      <p className="font-semibold uppercase tracking-wide text-slate-400">
                         {tBots("card.authorizationUrl") ?? "URL de autorização"}
                       </p>
                       <a

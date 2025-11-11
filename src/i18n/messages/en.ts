@@ -114,6 +114,7 @@ const en = {
     card: {
       guild: "Guild",
       interactionOriginBadge: "Interaction origin",
+      applicationId: "Application ID",
       authorizationUrl: "Authorization URL",
     },
   },

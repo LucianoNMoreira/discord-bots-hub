@@ -114,6 +114,7 @@ const es = {
     card: {
       guild: "Servidor",
       interactionOriginBadge: "Origen de interacción",
+      applicationId: "ID de la aplicación",
       authorizationUrl: "URL de autorización",
     },
   },
