@@ -19,7 +19,7 @@ app.use(
 
 app.use(
   basicAuth({
-    users: { [env.ADMIN_LOGIN]: env.ADMIN_PASSWORD },
+    users: { [env.AUTH_USERNAME]: env.AUTH_PASSWORD },
     challenge: true,
   }),
 );

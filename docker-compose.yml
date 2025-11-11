@@ -1,0 +1,33 @@
+services:
+  discord-bots-management:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: discord-bots-hub
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=3000
+      - AUTH_USERNAME=${AUTH_USERNAME:-admin}
+      - AUTH_PASSWORD=${AUTH_PASSWORD}
+      - AUTH_SECRET=${AUTH_SECRET}
+    volumes:
+      # Persistir dados dos bots
+      - ./data:/app/data
+      # Persistir uploads
+      - ./public/uploads:/app/public/uploads
+    networks:
+      - discord-bots-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/locale', (res) => process.exit(res.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  discord-bots-network:
+    driver: bridge
+

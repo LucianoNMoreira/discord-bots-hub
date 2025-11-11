@@ -1,0 +1,32 @@
+services:
+  discord-bots-management-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: development
+    container_name: discord-bots-hub-dev
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - AUTH_USERNAME=${AUTH_USERNAME:-admin}
+      - AUTH_PASSWORD=${AUTH_PASSWORD:-admin}
+      - AUTH_SECRET=${AUTH_SECRET:-dev-secret-key-32-chars-long-!!}
+    volumes:
+      # Hot reload - montar código fonte
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./data:/app/data
+      # Evitar conflitos com node_modules
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - discord-bots-network
+    command: pnpm dev
+
+networks:
+  discord-bots-network:
+    driver: bridge
+

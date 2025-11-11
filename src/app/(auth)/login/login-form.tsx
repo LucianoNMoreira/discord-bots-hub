@@ -19,7 +19,9 @@ export function LoginForm() {
     initialState,
   );
   const redirectTo = searchParams.get("redirectTo") ?? undefined;
-  const loginFields = tLogin("fields");
+  const loginFields = tLogin("fields") as { username: string; password: string };
+  const placeholders = tCommon("placeholders") as { username: string; password: string };
+  const actions = tCommon("actions") as { loginSubmit: string; loginSubmitting: string };
 
   return (
     <form className="w-full space-y-6" action={formAction}>
@@ -37,7 +39,7 @@ export function LoginForm() {
           name="username"
           type="text"
           required
-          placeholder={tCommon("placeholders").username}
+          placeholder={placeholders.username}
           className="w-full rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 text-slate-100 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
           disabled={isPending}
         />
@@ -54,7 +56,7 @@ export function LoginForm() {
           name="password"
           type="password"
           required
-          placeholder={tCommon("placeholders").password}
+          placeholder={placeholders.password}
           className="w-full rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 text-slate-100 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
           disabled={isPending}
         />
@@ -70,8 +72,8 @@ export function LoginForm() {
         disabled={isPending}
       >
         {isPending
-          ? tCommon("actions").loginSubmitting
-          : tCommon("actions").loginSubmit}
+          ? actions.loginSubmitting
+          : actions.loginSubmit}
       </button>
     </form>
   );

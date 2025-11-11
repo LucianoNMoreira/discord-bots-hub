@@ -16,11 +16,11 @@ const envSchema = z.object({
       }
       return parsed;
     }),
-  ADMIN_LOGIN: z.string().min(1, 'ADMIN_LOGIN is required.'),
-  ADMIN_PASSWORD: z.string().min(1, 'ADMIN_PASSWORD is required.'),
-  ENCRYPTION_SECRET: z
+  AUTH_USERNAME: z.string().min(1, 'AUTH_USERNAME is required.'),
+  AUTH_PASSWORD: z.string().min(1, 'AUTH_PASSWORD is required.'),
+  AUTH_SECRET: z
     .string()
-    .min(32, 'ENCRYPTION_SECRET must be at least 32 characters long for security.'),
+    .min(32, 'AUTH_SECRET must be at least 32 characters long for security.'),
 });
 
 export const env = envSchema.parse(process.env);

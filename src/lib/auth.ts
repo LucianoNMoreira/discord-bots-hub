@@ -5,6 +5,8 @@ import { env } from "./env";
 
 export const SESSION_COOKIE_NAME = "dbm_session";
 const DEFAULT_SESSION_DURATION_SECONDS = 60 * 60 * 8;
+// Cookie secure apenas se APP_BASE_URL começar com https://
+// Para desenvolvimento local (http://localhost), secure = false
 const isProduction = process.env.NODE_ENV === "production";
 
 type SessionPayload = {
@@ -73,7 +75,9 @@ export function verifySessionToken(token: string | undefined | null) {
 export async function getSession() {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+  console.log("[Auth] Token present:", !!token);
   const payload = verifySessionToken(token);
+  console.log("[Auth] Token valid:", !!payload);
   if (!payload) return null;
   return { username: payload.sub };
 }
@@ -81,12 +85,17 @@ export async function getSession() {
 export async function persistSession(username: string) {
   const { token, payload } = generateSessionToken(username);
   const cookieStore = await cookies();
+  // Secure apenas se APP_BASE_URL começar com https://
+  // Para http://localhost, secure deve ser false
+  const appBaseUrl = process.env.APP_BASE_URL || process.env.NEXT_PUBLIC_APP_BASE_URL || 'http://localhost:3000';
+  const shouldBeSecure = appBaseUrl.startsWith('https://');
+  console.log("[Auth] Setting session cookie - App URL:", appBaseUrl, "Secure:", shouldBeSecure);
   cookieStore.set({
     name: SESSION_COOKIE_NAME,
     value: token,
     httpOnly: true,
     sameSite: "lax",
-    secure: isProduction,
+    secure: shouldBeSecure,
     path: "/",
     maxAge: payload.exp - Math.floor(Date.now() / 1000),
   });

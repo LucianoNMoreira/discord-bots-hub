@@ -19,6 +19,7 @@
   - [2. Configure environment variables](#2-configure-environment-variables)
   - [3. Run locally](#3-run-locally)
   - [4. Production build](#4-production-build)
+  - [5. Docker deployment 🐳](#5-docker-deployment-)
 - [Discord configuration guide](#discord-configuration-guide)
 - [Webhook payload reference](#webhook-payload-reference)
 - [Roadmap \& ideas](#roadmap--ideas)
@@ -125,6 +126,55 @@ pnpm start
 ```
 
 Deploy anywhere you can run Node.js 20 (Railway, Render, Fly.io, Docker, etc.). Persist the `data` directory to keep message logs and avatars.
+
+### 5. Docker deployment 🐳
+
+The project includes a complete Docker setup for easy deployment:
+
+#### Quick Setup (Recommended)
+
+```bash
+# Run the setup script (configures permissions and .env)
+./docker-setup.sh
+
+# Start the application
+docker-compose up -d
+```
+
+#### Manual Setup
+
+```bash
+# 1. Create .env file with your configuration
+cp env.example .env
+# Edit .env with your values
+
+# 2. Fix permissions for uploads
+chmod -R 777 public/uploads
+chmod -R 755 data
+
+# 3. Build and run with Docker Compose
+docker-compose up -d
+
+# 4. Check logs
+docker-compose logs -f
+
+# 5. Stop containers
+docker-compose down
+```
+
+**For development with hot reload:**
+
+```bash
+docker-compose -f docker-compose.dev.yml up
+```
+
+📚 **Full Docker documentation:** See [DOCKER.md](DOCKER.md) for detailed instructions, troubleshooting and production deployment guides.
+
+#### Common Issues
+
+- **Unauthorized bots**: The encryption key changed. Either use the same `AUTH_SECRET` or re-add your bots.
+- **Upload errors**: Run `chmod -R 777 public/uploads` to fix permissions.
+- **Internal Server Error**: Check that all environment variables are set correctly in `.env`.
 
 ---
 

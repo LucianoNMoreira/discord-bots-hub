@@ -1,0 +1,65 @@
+# Dependências
+node_modules
+npm-debug.log
+pnpm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Next.js
+.next/
+out/
+build
+dist
+
+# Desenvolvimento
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+docker-compose.*.yml
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testes
+coverage
+.nyc_output
+*.log
+
+# Documentação
+*.md
+!README.md
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.travis.yml
+
+# Dados locais (serão volumes)
+data/*.json
+public/uploads/*
+!public/uploads/.gitkeep
+
+# Arquivos legados não usados
+src/app.ts
+
+# Misc
+*.tsbuildinfo
+.cache
+

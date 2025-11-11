@@ -1,11 +1,11 @@
- "use server";
+"use server";
 
 import { z } from "zod";
 import { redirect } from "next/navigation";
 
 import { clearSession, persistSession } from "@/lib/auth";
 import { env } from "@/lib/env";
-import { defaultLocale, isLocale } from "@/i18n/config";
+import { defaultLocale, isLocale, type Locale } from "@/i18n/config";
 import { getMessages } from "@/i18n/server";
 
 const loginSchema = z.object({
@@ -32,7 +32,7 @@ export async function loginAction(
 
   if (!result.success) {
     const locale =
-      isLocale(formData.get("locale")) ? (formData.get("locale") as string) : defaultLocale;
+      isLocale(formData.get("locale")) ? (formData.get("locale") as Locale) : defaultLocale;
     const messages = getMessages(locale);
     return { error: messages.login.errors.invalidPayload };
   }
