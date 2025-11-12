@@ -91,6 +91,13 @@ export function BotList({
                 </div>
                 <div className="flex gap-2">
                   <Link
+                    href={`/bots/${bot.id}/commands`}
+                    className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:bg-indigo-500/20 hover:border-indigo-500/30"
+                    title="Gerenciar comandos"
+                  >
+                    Comandos
+                  </Link>
+                  <Link
                     href={`/bots/${bot.id}/edit`}
                     className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:bg-indigo-500/20 hover:border-indigo-500/30"
                   >

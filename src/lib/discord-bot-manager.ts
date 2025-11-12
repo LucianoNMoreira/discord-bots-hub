@@ -1,9 +1,11 @@
-import { Client, GatewayIntentBits, Message, Partials } from "discord.js";
+import { Client, GatewayIntentBits, Message, Partials, ActivityType, Interaction, ChatInputCommandInteraction } from "discord.js";
 import { v4 as uuid } from "uuid";
 import { listBots, findBotById } from "./bots-store";
 import { decrypt } from "./crypto";
 import { env } from "./env";
 import { addMessageLog } from "./message-logs";
+import { registerCommandsInDiscord, getApplicationIdFromToken } from "./discord-commands";
+import { generateDiscordAuthUrl } from "./discord-utils";
 
 type BotClient = {
   client: Client;
@@ -69,9 +71,124 @@ class DiscordBotManager {
 
     try {
       client.once("ready", async () => {
-        console.log(`✅ Bot ${storedBot.name} (${botId}) online como ${client.user?.tag ?? "desconhecido"}`);
+        const botUser = client.user;
+        console.log(`✅ Bot ${storedBot.name} (${botId}) online como ${botUser?.tag ?? "desconhecido"}`);
         botClient.status = "online";
         botClient.error = undefined;
+
+        // Set bot presence to ensure it appears online
+        try {
+          await client.user?.setPresence({
+            activities: [{ name: "Gerenciando comandos", type: ActivityType.Playing }],
+            status: "online", // "online" | "idle" | "dnd" | "invisible" | "offline"
+          });
+          console.log(`[${storedBot.name}] ✅ Presença do bot configurada como online`);
+        } catch (presenceError) {
+          console.warn(`[${storedBot.name}] ⚠️ Não foi possível configurar presença:`, presenceError);
+        }
+
+        // Wait a bit for guilds cache to populate (Discord.js loads guilds asynchronously)
+        // Discord.js may take a few seconds to fully load all guilds
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+        
+        // Force fetch all guilds to ensure cache is populated
+        try {
+          await client.guilds.fetch();
+          console.log(`[${storedBot.name}] Cache de servidores atualizado. Total de servidores: ${client.guilds.cache.size}`);
+        } catch (fetchError) {
+          console.warn(`[${storedBot.name}] ⚠️ Erro ao atualizar cache de servidores:`, fetchError);
+        }
+
+        // Get Application ID from token for later use
+        const token = decrypt(env.AUTH_SECRET, storedBot.discord.token);
+        const tokenApplicationId = await getApplicationIdFromToken(token);
+
+        // Check if bot is in the configured guild
+        // First check cache, then try fetch
+        let guild = client.guilds.cache.get(storedBot.discord.guildId);
+        
+        if (!guild) {
+          // Try to fetch from API
+          try {
+            guild = await client.guilds.fetch(storedBot.discord.guildId);
+          } catch (fetchError) {
+            // Guild not found via fetch either
+          }
+        }
+
+        if (guild) {
+          console.log(`[${storedBot.name}] ✅ Bot está no servidor: ${guild.name} (${guild.id})`);
+          // Check if bot is a member of the guild
+          try {
+            const member = await guild.members.fetch(botUser!.id);
+            if (member) {
+              console.log(`[${storedBot.name}] ✅ Bot está presente no servidor como membro`);
+              console.log(`[${storedBot.name}] ✅ Status do bot no servidor: ${member.presence?.status || "desconhecido"}`);
+            }
+          } catch (memberError) {
+            console.warn(`[${storedBot.name}] ⚠️ Bot não foi encontrado como membro do servidor. Certifique-se de que o bot foi convidado para o servidor.`);
+          }
+        } else {
+          // List all guilds the bot is in
+          const guilds = client.guilds.cache;
+          const guildList = Array.from(guilds.values());
+          const guildNames = guildList.map((g) => `${g.name} (${g.id})`).join(", ");
+          
+          if (guildList.length > 0) {
+            console.error(`[${storedBot.name}] ❌ Bot NÃO está no servidor configurado (${storedBot.discord.guildId})`);
+            console.warn(`[${storedBot.name}] ⚠️ Bot está nos seguintes servidores:`);
+            guildList.forEach((g) => {
+              console.warn(`[${storedBot.name}]   - ${g.name} (${g.id})`);
+            });
+            console.warn(`[${storedBot.name}] ⚠️ AÇÃO NECESSÁRIA: Convide o bot para o servidor ${storedBot.discord.guildId} ou atualize o Guild ID na configuração para um dos servidores acima.`);
+            botClient.error = `Bot não está no servidor configurado. Bot está em: ${guildNames}. Convide o bot para o servidor ${storedBot.discord.guildId} ou atualize o Guild ID.`;
+          } else {
+            console.error(`[${storedBot.name}] ❌ Bot não está em nenhum servidor!`);
+            
+            // Use the Application ID we already fetched
+            const applicationId = tokenApplicationId || storedBot.discord.applicationId;
+            
+            let authUrl = "";
+            if (applicationId) {
+              authUrl = generateDiscordAuthUrl(applicationId);
+              console.warn(`[${storedBot.name}] ⚠️ AÇÃO NECESSÁRIA: Convide o bot para um servidor usando esta URL:`);
+              console.warn(`[${storedBot.name}] ${authUrl}`);
+            } else {
+              console.warn(`[${storedBot.name}] ⚠️ AÇÃO NECESSÁRIA: Convide o bot para um servidor usando a URL de autorização no Discord Developer Portal.`);
+            }
+            
+            botClient.error = applicationId 
+              ? `Bot não está em nenhum servidor. Convide o bot usando: ${authUrl}`
+              : `Bot não está em nenhum servidor. Convide o bot para o servidor ${storedBot.discord.guildId} usando a URL de autorização.`;
+          }
+        }
+
+        // Auto-register commands if application ID is available
+        if (storedBot.discord.applicationId || tokenApplicationId) {
+          try {
+            console.log(`[${storedBot.name}] Registrando comandos no Discord...`);
+            const result = await registerCommandsInDiscord(botId);
+            if (result.registered > 0) {
+              console.log(
+                `[${storedBot.name}] ✅ ${result.registered} de ${result.total} comandos registrados com sucesso`,
+              );
+              console.log(
+                `[${storedBot.name}] ℹ️ Os comandos podem levar até 1 hora para aparecerem no Discord. Tente digitar "/" no servidor para ver os comandos disponíveis.`,
+              );
+            }
+            if (result.errors.length > 0) {
+              console.warn(
+                `[${storedBot.name}] ⚠️ ${result.errors.length} aviso(s) ao registrar comandos:`,
+                result.errors,
+              );
+            }
+          } catch (error) {
+            console.error(
+              `[${storedBot.name}] ❌ Erro ao registrar comandos:`,
+              error,
+            );
+          }
+        }
       });
 
       // Listen to message events - ONLY process Direct Messages (DMs)
@@ -208,6 +325,136 @@ class DiscordBotManager {
             webhookStatus: "error",
             webhookError: errorMessage,
           });
+        }
+      });
+
+      // Listen to slash command interactions
+      client.on("interactionCreate", async (interaction: Interaction) => {
+        // Only handle chat input commands (slash commands)
+        if (!interaction.isChatInputCommand()) {
+          return;
+        }
+
+        const commandInteraction = interaction as ChatInputCommandInteraction;
+        const isDM = !interaction.guildId;
+
+        // Check if we should process this interaction based on origin
+        const origin = storedBot.interactionOrigin;
+        const shouldProcess =
+          (isDM && (origin === "discord-user" || origin === "hybrid")) ||
+          (!isDM && (origin === "discord-channel" || origin === "hybrid"));
+
+        if (!shouldProcess) {
+          // Acknowledge but don't process
+          if (commandInteraction.isRepliable()) {
+            await commandInteraction.reply({ content: "Comando não processado.", ephemeral: true }).catch(() => {
+              // Ignore errors
+            });
+          }
+          return;
+        }
+
+        let channelName = isDM ? "DM" : commandInteraction.channelId;
+        if (!isDM && commandInteraction.channel && "name" in commandInteraction.channel) {
+          channelName = commandInteraction.channel.name ?? commandInteraction.channelId;
+        } else if (isDM && commandInteraction.channel) {
+          try {
+            const dmChannel = await commandInteraction.channel.fetch();
+            if (dmChannel && "recipient" in dmChannel && dmChannel.recipient) {
+              channelName = `DM with ${dmChannel.recipient.tag}`;
+            }
+          } catch {
+            // ignore
+          }
+        }
+
+        const summaryPrefix = isDM ? "Comando DM" : "Comando";
+        console.log(
+          `[${storedBot.name}] ${summaryPrefix} /${commandInteraction.commandName} de ${commandInteraction.user.tag} (${commandInteraction.user.id}) em ${channelName}`
+        );
+
+        // Extract command options
+        const options: Record<string, unknown> = {};
+        commandInteraction.options.data.forEach((option) => {
+          if (option.value !== undefined && option.value !== null) {
+            options[option.name] = option.value;
+          } else if (option.options) {
+            // Handle subcommands
+            const subOptions: Record<string, unknown> = {};
+            option.options.forEach((subOption) => {
+              if (subOption.value !== undefined && subOption.value !== null) {
+                subOptions[subOption.name] = subOption.value;
+              }
+            });
+            options[option.name] = subOptions;
+          }
+        });
+
+        // Forward interaction to webhook
+        try {
+          const payload = {
+            botId,
+            botName: storedBot.name,
+            interactionOrigin: storedBot.interactionOrigin,
+            interactionType: "command",
+            commandName: commandInteraction.commandName,
+            commandId: commandInteraction.commandId,
+            guildId: commandInteraction.guildId ?? null,
+            guildName: commandInteraction.guild?.name ?? null,
+            channelId: commandInteraction.channelId,
+            channelName,
+            userId: commandInteraction.user.id,
+            username: commandInteraction.user.username,
+            userTag: commandInteraction.user.tag,
+            options,
+            createdAt: commandInteraction.createdAt.toISOString(),
+          };
+
+          const response = await fetch(storedBot.webhookUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Discord-Bot-Id": botId,
+              "X-Discord-Guild-Id": commandInteraction.guildId ?? "",
+              "X-Discord-Channel-Id": commandInteraction.channelId,
+              "X-Discord-User-Id": commandInteraction.user.id,
+              "X-Discord-Interaction-Type": "command",
+              "X-Discord-Command-Name": commandInteraction.commandName,
+              "X-Discord-Forwarded-By": "discord-bots-management",
+            },
+            body: JSON.stringify(payload),
+          });
+
+          if (response.ok) {
+            console.log(`[${storedBot.name}] ✅ Comando /${commandInteraction.commandName} encaminhado para webhook com sucesso`);
+          } else {
+            const errorText = await response.text().catch(() => "Unknown error");
+            console.error(
+              `[${storedBot.name}] ❌ Falha ao encaminhar comando /${commandInteraction.commandName}: HTTP ${response.status}: ${errorText}`
+            );
+          }
+
+          // Acknowledge the interaction (Discord requires a response within 3 seconds)
+          // We'll send a deferred response so the webhook can respond later
+          if (commandInteraction.isRepliable() && !commandInteraction.replied && !commandInteraction.deferred) {
+            await commandInteraction.deferReply({ ephemeral: false }).catch((error) => {
+              console.warn(`[${storedBot.name}] ⚠️ Não foi possível responder à interação:`, error);
+            });
+          }
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
+          console.error(
+            `[${storedBot.name}] ❌ Erro ao processar comando /${commandInteraction.commandName}:`,
+            errorMessage,
+          );
+
+          // Try to acknowledge with error message
+          if (commandInteraction.isRepliable() && !commandInteraction.replied && !commandInteraction.deferred) {
+            await commandInteraction.reply({ content: "Erro ao processar comando.", ephemeral: true }).catch(() => {
+              // Ignore errors
+            });
+          }
         }
       });
 
