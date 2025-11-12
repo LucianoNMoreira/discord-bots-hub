@@ -69,49 +69,23 @@ export function BotList({
               key={bot.id}
               className="flex flex-col gap-4 rounded-xl border border-slate-800 bg-slate-900/60 p-6 shadow shadow-slate-950/40"
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-slate-800 bg-slate-950">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={bot.avatarUrl}
-                      alt={`${bot.name} avatar`}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-slate-100">
-                      {bot.name}
-                    </h3>
-                    <p className="text-xs uppercase tracking-wide text-indigo-300">
-                      {originOptions[bot.interactionOrigin as keyof typeof originOptions] ??
-                        bot.interactionOrigin}
-                    </p>
-                  </div>
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-800 bg-slate-950">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={bot.avatarUrl}
+                    alt={`${bot.name} avatar`}
+                    className="h-full w-full object-cover"
+                  />
                 </div>
-                <div className="flex gap-2">
-                  <Link
-                    href={`/bots/${bot.id}/commands`}
-                    className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:bg-indigo-500/20 hover:border-indigo-500/30"
-                    title="Gerenciar comandos"
-                  >
-                    Comandos
-                  </Link>
-                  <Link
-                    href={`/bots/${bot.id}/edit`}
-                    className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:bg-indigo-500/20 hover:border-indigo-500/30"
-                  >
-                    {tCommon("actions.editBot") ?? "Edit"}
-                  </Link>
-                  <button
-                    onClick={() => handleDelete(bot.id)}
-                    disabled={deletingBotId === bot.id}
-                    className="rounded-lg border border-red-700/50 bg-red-900/20 px-3 py-1.5 text-xs font-semibold text-red-300 transition hover:bg-red-500/20 hover:border-red-500/50 disabled:opacity-50"
-                  >
-                    {deletingBotId === bot.id
-                      ? tCommon("actions.deleting") ?? "Removendo..."
-                      : tCommon("actions.delete") ?? "Remover"}
-                  </button>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-xl font-semibold text-slate-100">
+                    {bot.name}
+                  </h3>
+                  <p className="text-xs uppercase tracking-wide text-indigo-300">
+                    {originOptions[bot.interactionOrigin as keyof typeof originOptions] ??
+                      bot.interactionOrigin}
+                  </p>
                 </div>
               </div>
               <p className="text-sm text-slate-400">{bot.description}</p>
@@ -155,6 +129,30 @@ export function BotList({
                     </>
                   );
                 })()}
+              </div>
+              <div className="flex gap-2 pt-2 border-t border-slate-800">
+                <Link
+                  href={`/bots/${bot.id}/commands`}
+                  className="flex-1 rounded-md border border-slate-700 bg-slate-800/80 px-3 py-2 text-xs font-semibold text-slate-200 text-center transition hover:bg-indigo-500/20 hover:border-indigo-500/40 hover:text-indigo-200"
+                  title="Gerenciar comandos"
+                >
+                  Comandos
+                </Link>
+                <Link
+                  href={`/bots/${bot.id}/edit`}
+                  className="flex-1 rounded-md border border-slate-700 bg-slate-800/80 px-3 py-2 text-xs font-semibold text-slate-200 text-center transition hover:bg-indigo-500/20 hover:border-indigo-500/40 hover:text-indigo-200"
+                >
+                  {tCommon("actions.editBot") ?? "Editar"}
+                </Link>
+                <button
+                  onClick={() => handleDelete(bot.id)}
+                  disabled={deletingBotId === bot.id}
+                  className="flex-1 rounded-md border border-red-700/50 bg-red-900/20 px-3 py-2 text-xs font-semibold text-red-300 transition hover:bg-red-500/20 hover:border-red-500/60 hover:text-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {deletingBotId === bot.id
+                    ? tCommon("actions.deleting") ?? "Removendo..."
+                    : tCommon("actions.delete") ?? "Remover"}
+                </button>
               </div>
             </article>
           ))}
