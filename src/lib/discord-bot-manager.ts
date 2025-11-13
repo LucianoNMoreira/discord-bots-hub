@@ -407,6 +407,8 @@ class DiscordBotManager {
             interactionType: "command",
             commandName: commandInteraction.commandName,
             commandId: commandInteraction.commandId,
+            interactionId: commandInteraction.id,
+            messageId: commandInteraction.id, // For slash commands, interaction ID serves as message identifier
             guildId: commandInteraction.guildId ?? null,
             guildName: commandInteraction.guild?.name ?? null,
             channelId: commandInteraction.channelId,
@@ -428,6 +430,8 @@ class DiscordBotManager {
               "X-Discord-User-Id": commandInteraction.user.id,
               "X-Discord-Interaction-Type": "command",
               "X-Discord-Command-Name": commandInteraction.commandName,
+              "X-Discord-Interaction-Id": commandInteraction.id,
+              "X-Discord-Message-Id": commandInteraction.id,
               "X-Discord-Forwarded-By": "discord-bots-management",
             },
             body: JSON.stringify(payload),
