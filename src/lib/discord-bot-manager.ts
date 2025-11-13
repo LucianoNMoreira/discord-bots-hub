@@ -220,6 +220,11 @@ class DiscordBotManager {
           }
         }
 
+        const userDisplayName =
+          (!isDM && message.member && message.member.displayName) ||
+          message.author.globalName ||
+          message.author.username;
+
         const logEntry = {
           id: uuid(),
           botId,
@@ -232,6 +237,7 @@ class DiscordBotManager {
           guildName: message.guild?.name ?? null,
           userId: message.author.id,
           username: message.author.username,
+          userDisplayName,
           content: message.content,
           hasAttachments: message.attachments.size > 0,
           attachmentCount: message.attachments.size,
@@ -275,6 +281,7 @@ class DiscordBotManager {
             channelId: message.channelId,
             userId: message.author.id,
             username: message.author.username,
+            userDisplayName,
             messageId: message.id,
             content: message.content,
             attachments: message.attachments.map((attachment) => ({
@@ -295,6 +302,7 @@ class DiscordBotManager {
               "X-Discord-Guild-Id": message.guildId ?? "",
               "X-Discord-Channel-Id": message.channelId,
               "X-Discord-User-Id": message.author.id,
+              "X-Discord-User-Display-Name": userDisplayName,
               "X-Discord-Forwarded-By": "discord-bots-management",
             },
             body: JSON.stringify(payload),
@@ -390,6 +398,17 @@ class DiscordBotManager {
           }
         });
 
+        let userDisplayName =
+          commandInteraction.user.globalName ?? commandInteraction.user.username;
+        const interactionMember = commandInteraction.member;
+        if (interactionMember) {
+          if ("displayName" in interactionMember && typeof interactionMember.displayName === "string") {
+            userDisplayName = interactionMember.displayName;
+          } else if ("nick" in interactionMember && interactionMember.nick) {
+            userDisplayName = interactionMember.nick;
+          }
+        }
+
         // Acknowledge the interaction silently (Discord requires a response within 3 seconds)
         // Use ephemeral deferReply to avoid showing "thinking..." state without sending a visible message
         if (commandInteraction.isRepliable() && !commandInteraction.replied && !commandInteraction.deferred) {
@@ -415,6 +434,7 @@ class DiscordBotManager {
             channelName,
             userId: commandInteraction.user.id,
             username: commandInteraction.user.username,
+            userDisplayName,
             userTag: commandInteraction.user.tag,
             options,
             createdAt: commandInteraction.createdAt.toISOString(),
@@ -428,6 +448,7 @@ class DiscordBotManager {
               "X-Discord-Guild-Id": commandInteraction.guildId ?? "",
               "X-Discord-Channel-Id": commandInteraction.channelId,
               "X-Discord-User-Id": commandInteraction.user.id,
+              "X-Discord-User-Display-Name": userDisplayName,
               "X-Discord-Interaction-Type": "command",
               "X-Discord-Command-Name": commandInteraction.commandName,
               "X-Discord-Interaction-Id": commandInteraction.id,
