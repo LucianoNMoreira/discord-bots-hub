@@ -390,7 +390,15 @@ class DiscordBotManager {
           }
         });
 
-        // Forward interaction to webhook
+        // Acknowledge the interaction silently (Discord requires a response within 3 seconds)
+        // Use ephemeral deferReply to avoid showing "thinking..." state without sending a visible message
+        if (commandInteraction.isRepliable() && !commandInteraction.replied && !commandInteraction.deferred) {
+          await commandInteraction.deferReply({ ephemeral: true }).catch((error) => {
+            console.warn(`[${storedBot.name}] ⚠️ Não foi possível responder à interação:`, error);
+          });
+        }
+
+        // Forward interaction to webhook (after responding to avoid "thinking..." state)
         try {
           const payload = {
             botId,
@@ -432,14 +440,6 @@ class DiscordBotManager {
             console.error(
               `[${storedBot.name}] ❌ Falha ao encaminhar comando /${commandInteraction.commandName}: HTTP ${response.status}: ${errorText}`
             );
-          }
-
-          // Acknowledge the interaction (Discord requires a response within 3 seconds)
-          // We'll send a deferred response so the webhook can respond later
-          if (commandInteraction.isRepliable() && !commandInteraction.replied && !commandInteraction.deferred) {
-            await commandInteraction.deferReply({ ephemeral: false }).catch((error) => {
-              console.warn(`[${storedBot.name}] ⚠️ Não foi possível responder à interação:`, error);
-            });
           }
         } catch (error) {
           const errorMessage =
